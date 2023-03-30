@@ -1,0 +1,8 @@
+latex/*
+!latex/*.bib
+!latex/*.bst
+!latex/*.sty
+!latex/*.tex
+!latex/images
+!latex/sections
+

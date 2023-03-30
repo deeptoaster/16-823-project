@@ -1,0 +1,37 @@
+\documentclass[10pt, twocolumn, letterpaper]{article}
+\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[pagebackref, breaklinks, colorlinks]{hyperref}
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\crefname{table}{Tab.}{Tabs.}
+\Crefname{table}{Table}{Tables}
+\def\cvprPaperID{*****} % *** Enter the CVPR Paper ID here
+\def\confName{CVPR}
+\def\confYear{2023}
+\begin{document}
+  \title{Mirror-Assisted Photometric Stereo}
+  \author{
+    Yizhen Yu \\
+    Carnegie Mellon University \\
+    \texttt{\small yizheny@andrew.cmu.edu}
+  }
+  \maketitle
+  \input{sections/00_abstract}
+  \input{sections/01_introduction}
+  %\input{sections/02_relatedwork}
+  %\input{sections/03_technical}
+  %\input{sections/04_implementation}
+  %\input{sections/05_results}
+  %\input{sections/06_conclusion}
+  {
+    \small
+    \bibliographystyle{ieee_fullname}
+    \bibliography{references}
+  }
+\end{document}
+
