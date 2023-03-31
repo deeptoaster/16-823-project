@@ -1,19 +1,71 @@
 \section{Introduction}\label{sec:introduction}
-Photometric stereo and shape from shading describe a range of well-established techniques, first introduced in 1980~\cite{woodham}, for recovering surface normals from one or more images of target objects under known lighting conditions. Such techniques are important for performing depth and scene reconstruction under various conditions and restrictions in which it is infeasible to use active methods such as time-of-flight (ToF) sensing, but in which camera data is available. Traditionally, the objects handled by photometric stereo are assumed to be Lambertian and the light source directional, although further developments have expanded the range of applicable cases in two ways: to permit to materials with other known~\cite{defigueiredo} and unknown~\cite{hertzmann} reflectance properties, and to allow for the general and otherwise uncalibrated lighting conditions~\cite{basri}.
+Photometric stereo and shape from shading describe a range of well-established
+techniques, first introduced in 1980~\cite{woodham}, for recovering surface
+normals from one or more images of target objects under known lighting
+conditions. Such techniques are important for performing depth and scene
+reconstruction under various conditions and restrictions in which more precise
+control of lighting and sensing is infeasible, such as with time-of-flight
+(ToF) methods, but in which camera data is available under multiple lighting
+conditions. Traditionally, the objects handled by photometric stereo are
+assumed to be Lambertian and the single light source calibrated and
+directional, although further developments have expanded the range of
+applicable cases in two ways: to permit to materials with other
+known~\cite{defigueiredo} and unknown~\cite{hertzmann} reflectance properties,
+and to allow for multiple, varied, and uncalibrated lighting
+conditions~\cite{basri}.
 
-Problems may arise when there are mirror-like surfaces in the scene, for several reasons:
+Problems may arise when there are mirror-like surfaces in the scene, for
+several reasons:
 \begin{itemize}
-  \item Pure chrome surfaces do not have a diffuse component from which a linear relationship between surface normal and reflectance can easily be solved, as in the general principle behind photometric stereo.
-  \item Mirrors introduce ``false'' surfaces into the scene, in the sense that the image reflected by a perfect mirror are indistinguishable from physical objects placed at the location of the image without additional heuristics.
-  \item Even diffuse objects in the scene are affected as light reflecting off the mirror strikes the object from a different angle, introducing a strong indirect lighting component.
+  \item Pure chrome surfaces do not have a diffuse component from which a
+  linear relationship between surface normal and reflectance can easily be
+  solved, as in the general principle behind photometric stereo.
+  \item Mirrors introduce ``false'' surfaces into the scene, in the sense that
+  the image reflected by a perfect mirror are indistinguishable from physical
+  objects placed at the location of the image without additional heuristics.
+  \item Even diffuse objects in the scene are affected as light reflecting off
+  the mirror strikes the object from a different angle, introducing a strong
+  indirect lighting component.
 \end{itemize}
-This is enough of a nuisance in some applications of scene reconstruction, such as autonomous driving, that techniques have been developed specifically to detect and mask out mirror surfaces~\cite{yang}.
+This is enough of a nuisance in some applications of scene reconstruction, such
+as autonomous driving, that techniques have been developed specifically to
+detect and mask out mirror surfaces~\cite{yang}.
 
-However, under the right assumptions, the issues that come with mirrors in a scene can be used to our advantage. Since the reflection of light off a perfect chrome surface is straightforward to model well, we can use these effects, combined with the position and orientation of a mirror, to glean additional insight into scene properties. In particular, the image of the target object can be treated as an additional capture of the scene from a different position---the position of the real camera across the mirror plane---and the indirect lighting by the mirror can be treated similarly as an additional light source from ``behind'' the mirror.
+However, under the right assumptions, the issues that come with mirrors in a
+scene can be used to our advantage. Since the reflection of light off a perfect
+chrome surface is straightforward to model well, we can use these effects,
+combined with the position and orientation of a mirror, to glean additional
+insight into scene properties. In particular, the image of the target object
+can be treated as an additional capture of the scene from a different
+position---the position of the real camera across the mirror plane---and the
+indirect lighting by the mirror can be treated similarly as an additional light
+source from ``behind'' the mirror.
 
-In fact, several papers have already used mirrors as a source of additional scene information in applying a range of other scene-reconstruction methods. Lanman et al.~\cite{lanman} demonstrates the use of a pair of mirrors to perform structured-light 3D scanning more quickly, obviating the need for multiple scans with the camera placed at different angles to capture every side of the object. Ahn et al.~\cite{ahn} extends this to a larger ``kaleidoscope'' of mirrors that don't need to be aligned along an axis, distinguishing pixels by reflection paths using the epipolar relationship between projector and camera. Xu et al.~\cite{xu} takes the mirror setup to its logical conclusion---a light trap---for performing depth sensing using a ToF camera.
+In fact, several papers have already used mirrors as a source of additional
+scene information in applying a range of other scene-reconstruction methods.
+Lanman et al.~\cite{lanman} demonstrates the use of a pair of mirrors to
+perform structured-light 3D scanning more quickly, obviating the need for
+multiple scans with the camera placed at different angles to capture every side
+of the object. Ahn et al.~\cite{ahn} extends this to a larger ``kaleidoscope''
+of mirrors that don't need to be aligned along an axis, distinguishing pixels
+by reflection paths using the epipolar relationship between projector and
+camera. Xu et al.~\cite{xu} takes the mirror setup to its logical
+conclusion---a light trap---for performing depth sensing using a ToF camera.
 
-However, each of these techniques require very specific lighting conditions---\cite{lanman} and~\cite{ahn} with structured lighting projections (with the additional constraint of directional lighting, using a Fresnel lens, in the case of~\cite{lanman}) and~\cite{xu} with two different types of ToF sensors, which require active illumination.
+Each of these techniques require very specific lighting
+conditions---\cite{lanman} and~\cite{ahn} with structured lighting projections
+(with the additional constraint of directional lighting, using a Fresnel lens,
+in the case of~\cite{lanman}) and~\cite{xu} with two different types of ToF
+sensors, which require active illumination.
 
-The approach presented in this paper is believed to be the first application of mirror-augmented scene reconstruction to a photometric stereo technique, which is more conducive to simple lighting setups, such as that of a single directional light source with no additional structure requirements. Furthermore, we demonstrate the ability to solve for an \textit{unknown} light source in the scene before performing photometric stereo using the estimate. This shows that this technique can be appropriate in many situations in which existing techniques that incorporate mirrors may not be, such as in building a model of a room or of objects in an inaccessible location---applications in which we do not have the ability to manipulate the scene for our own benefit, to add mirrors or lighting according to a set structure.
+The approach presented in this paper is believed to be the first application of
+mirror-augmented scene reconstruction to a photometric stereo technique, which
+is more conducive to simple lighting setups without structure requirements
+beyond a directional source. Furthermore, we demonstrate the ability to solve
+for \textit{unknown} light sources before performing photometric stereo using
+the estimates. This shows that this technique can be appropriate in many
+situations in which existing techniques that incorporate mirrors may not be,
+such as in building a model of a room or of objects in an inaccessible
+location---applications in which we do not have the ability to manipulate the
+scene for our own benefit, to add mirrors or structured light.
 
