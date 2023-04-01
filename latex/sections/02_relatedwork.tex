@@ -1,0 +1,76 @@
+\section{Related Work}\label{sec:relatedwork}
+\subsection{Photometric Stereo Under Various Lighting}
+Woodham's original paper~\cite{woodham1979} describes photometric stereo under
+a single directional light source per image, such as that of an infinitely
+distant point source. As this naturally restricts the utility of the method to
+carefully calibrated indoor environments, much research since then has been
+done in relaxing this requirement.
+
+Clark et al.~\cite{clark2006} show that nearby planar light sources, such as
+LCD computer monitors~\cite{clark2010}, are effective approximations of distant
+point sources and can therefore be used in conjunction with the original
+algorithm. Deviating from the original assumptions, several groups including
+Xie et al.~\cite{xie} produce methods for photometric stereo using
+\emph{nearby} point sources, characterizing it as a distortion of the original
+problem that can be solved by iterating mesh-deformations until they converge.
+Gan and Thorm\"{a}hlen~\cite{gan} take a similar approach in providing an
+iterative algorithm for the same problem with area lights. The goal of the
+latter two papers is the same: to apply a little more computation in performing
+photometric stereo in exchange for a more practical lighting setup.
+
+More generally, Basri and Jacobs~\cite{basri2001-12} provide a theoretical
+framework for photometric stereo under \emph{any} combination of distant
+isotropic lights, building on their previous finding~\cite{basri2001-07} that
+the reflectance function of any Lambertian surface under such lighting is
+well-approximated by low-order spherical harmonics. This extends Woodham et
+al.'s 1991 report~\cite{woodham1991} that the light sources used in photometric
+stereo need not be known \textit{a priori}. Finally, in~\cite{schechner}
+Schechner et al.\ show specifically that the traditional matrix formulation of
+photometric stereo can easily be adapted to fit two light sources per capture
+instead of one. These results demonstrate the feasibility, in general, of
+performing photometric stereo under two or more unknown light sources. This is
+a slightly less constrained problem than our own, since the light from our
+primary source and its mirror image are coupled in any given frame.
+\subsection{Scene Reconstruction With Mirrors}
+Beyond photometric stereo, a variety of techniques have been developed to adapt
+to and use mirrors in scene reconstruction. Noting that mirrors and glass
+surfaces, while traditionally difficult for visual approaches to depth sensing,
+are particularly suited to acoustic methods, Zhang et al.~\cite{zhang}
+demonstrate a sensor fusion method with a first-generation Kinect camera (a
+structured-light device) and an ultrasonic range sensor that is capable of
+producing a dense depth map over a variety of surfaces.
+
+In some cases, mirrors are explicitly incorporated into the lighting setup to
+improve the reconstruction technique. Lanman et al.~\cite{lanman} take
+advantage of the complex interactions between structured light and mirrors,
+which~\cite{zhang} avoids using fused acoustic data, to make 3D scanning faster
+and allow a single camera to scan many sides of an object at once. A Fresnel
+lens is used to project the light structure orthographically. Ahn et
+al.~\cite{ahn} generalize this approach, removing the requirement that the
+mirrors be aligned along an axis by presenting the unravelling of the multiple
+image views as a labelling problem, allowing the system to view an object being
+scanned from even more angles and resolving otherwise inherent problems with
+inset areas. Finally, Xu et al.~\cite{xu} completes the mirrors into a light
+trap, inferring from a ToF camera and the known shape of the trap the complete
+light path of a ray ultimately reflected by the diffuse object inside. Note
+that although these methods are effective at utilizing numerous views of an
+object from multiple mirrors, they do so while restricted to objects small
+enough to fit in their setup and with the requirement that the operator be
+allowed to arrange a set of mirrors with high precision, two limitations the
+method in this paper seeks to avoid.
+
+It's worth noting that because mirrors are frequently a point of failure in
+na\"{\i}ve approaches to certain reconstruction algorithms, some groups take
+the explicit first step of \emph{detecting} a mirror in the scene. Yang et
+al.~\cite{yang} take a deep-learning view of the problem, introducing both
+MirrorNet and a labelled dataset of images containing mirrors for training it.
+One key insight they use is the existence of abrupt contextual contrast inside
+and outside of the mirror image, which helps the network infer and segment the
+mirror boundaries. This line of work is taken further by Lin et al.\ in the
+same group~\cite{lin}, which takes advantage of the fact that the content
+inside of the mirror is a reflection of something outside of it to not only
+improve on detection performance but also implicitly correlate the mirror image
+with its original.  Although this project does not make use of mirror detection
+algorithms, the existence of these methods indicates possible future research
+in end-to-end detection, localization, and adaptation of mirrors in scenes for
+photometric stereo.

@@ -1,18 +1,17 @@
 \section{Introduction}\label{sec:introduction}
 Photometric stereo and shape from shading describe a range of well-established
-techniques, first introduced in 1980~\cite{woodham}, for recovering surface
+techniques, first introduced in 1980~\cite{woodham1979}, for recovering surface
 normals from one or more images of target objects under known lighting
 conditions. Such techniques are important for performing depth and scene
-reconstruction under various conditions and restrictions in which more precise
-control of lighting and sensing is infeasible, such as with time-of-flight
-(ToF) methods, but in which camera data is available under multiple lighting
-conditions. Traditionally, the objects handled by photometric stereo are
-assumed to be Lambertian and the single light source calibrated and
-directional, although further developments have expanded the range of
-applicable cases in two ways: to permit to materials with other
+reconstruction in situations in which camera data is available but where more
+precise control of lighting and sensing, required by time-of-flight (ToF)
+methods, are infeasible. Traditionally, the objects handled by photometric
+stereo are assumed to be Lambertian and the light to come from a single,
+calibrated, and directional source. Further developments have expanded the
+range of applicable cases in two ways: to permit to materials with other
 known~\cite{defigueiredo} and unknown~\cite{hertzmann} reflectance properties,
 and to allow for multiple, varied, and uncalibrated lighting
-conditions~\cite{basri}.
+conditions~\cite{basri2001-12}.
 
 Problems may arise when there are mirror-like surfaces in the scene, for
 several reasons:
