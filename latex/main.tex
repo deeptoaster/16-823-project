@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage[pagebackref, breaklinks, colorlinks]{hyperref}
 \usepackage[capitalize]{cleveref}
+\usepackage{svg}
 \crefname{section}{Sec.}{Secs.}
 \Crefname{section}{Section}{Sections}
 \crefname{table}{Tab.}{Tabs.}
@@ -13,6 +14,15 @@
 \def\cvprPaperID{*****} % *** Enter the CVPR Paper ID here
 \def\confName{CVPR}
 \def\confYear{2023}
+\newcommand{\albedo}{\rho}
+\newcommand{\light}{\boldsymbol{\ell}}
+\newcommand{\lights}{\mathbf{L}}
+\newcommand{\mirror}{\mathbf{m}}
+\newcommand{\occlusion}{\mathbf{1}}
+\newcommand{\pixel}{I}
+\newcommand{\pixels}{\mathbf{I}}
+\newcommand{\point}{\mathbf{n}}
+\DeclareUnicodeCharacter{2113}{$\light$}
 \begin{document}
   \title{Mirror-Assisted Photometric Stereo}
   \author{
@@ -24,7 +34,7 @@
   \input{sections/00_abstract}
   \input{sections/01_introduction}
   \input{sections/02_relatedwork}
-  %\input{sections/03_technical}
+  \input{sections/03_technical}
   %\input{sections/04_implementation}
   %\input{sections/05_results}
   %\input{sections/06_conclusion}
