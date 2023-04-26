@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
 from pathlib import PurePath
-from typing import Callable
+from typing import Callable, Optional
 
 
 def make_parse_floats(action: Action) -> Callable[[str], list[float]]:
@@ -17,9 +17,14 @@ def make_parse_floats(action: Action) -> Callable[[str], list[float]]:
     return parse_floats
 
 
+def parse_ranges(ranges: str) -> list[int]:
+    splits = (range_str.split("-") for range_str in ranges.split(","))
+    return sum([list(range(int(split[0]), int(split[-1]) + 1)) for split in splits], [])
+
+
 def parse_arguments() -> Namespace:
     parser = ArgumentParser()
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(required=True)
     default_parser = subparsers.add_parser(
         "default", help="load images and lighting by command line"
     )
@@ -34,10 +39,11 @@ def parse_arguments() -> Namespace:
         "--light",
         action="append",
         help="lighting intensity and direction in the form l_x,l_y,l_z",
+        required=True,
     )
     light_argument.type = make_parse_floats(light_argument)
     default_parser.add_argument(
-        "-m", "--mask", help="path to object mask", required=True, type=PurePath
+        "-m", "--mask", help="path to object mask", type=PurePath
     )
     mirror_argument = default_parser.add_argument(
         "-r",
@@ -51,11 +57,23 @@ def parse_arguments() -> Namespace:
     diligent_parser.add_argument(
         "directory", help="path to DiLiGent directory", type=PurePath
     )
+    diligent_parser.add_argument(
+        "-i",
+        "--indices",
+        help="indices or ranges of indices of images to use",
+        type=parse_ranges,
+    )
     return parser.parse_args()
 
 
-def load_images(image_paths: list[PurePath], mask_path: PurePath) -> NDArray[np.single]:
-    mask = cv2.imread(str(mask_path), flags=cv2.IMREAD_GRAYSCALE)
+def load_images(
+    image_paths: list[PurePath], mask_path: Optional[PurePath]
+) -> NDArray[np.single]:
+    mask = (
+        cv2.imread(str(mask_path), flags=cv2.IMREAD_GRAYSCALE)
+        if mask_path is not None
+        else np.ones((1, 1))
+    )
     images = [
         cv2.imread(str(image_path), flags=cv2.IMREAD_COLOR)
         for image_path in image_paths
@@ -71,17 +89,23 @@ def load_images(image_paths: list[PurePath], mask_path: PurePath) -> NDArray[np.
 
 
 arguments = parse_arguments()
-if arguments.directory is not None:
+if "directory" in arguments:
     with open(arguments.directory / "filenames.txt") as image_names:
         images = load_images(
-            [arguments.directory / image_name.rstrip() for image_name in image_names],
+            [
+                arguments.directory / image_name.rstrip()
+                for image_index, image_name in enumerate(image_names)
+                if arguments.indices is None or image_index in arguments.indices
+            ],
             arguments.directory / "mask.png",
         )
     lights = (
-        np.loadtxt(arguments.directory / "light_directions.txt")
+        np.loadtxt(arguments.directory / "light_directions.txt")[
+            arguments.indices or slice(None)
+        ]
         * cv2.cvtColor(
             np.loadtxt(arguments.directory / "light_intensities.txt", dtype=np.single)[
-                np.newaxis
+                np.newaxis, arguments.indices or slice(None)
             ],
             cv2.COLOR_RGB2GRAY,
         ).T
@@ -95,7 +119,7 @@ lights_pinv = np.linalg.inv(lights.T @ lights) @ lights.T
 normals_with_albedos = np.tensordot(images, lights_pinv, ([2], [1]))
 albedos = np.linalg.norm(normals_with_albedos, axis=2)
 normals = normals_with_albedos / albedos[:, :, np.newaxis]
-if arguments.directory is not None:
+if "directory" in arguments:
     figure, (axis_gt, axis_computed) = plt.subplots(1, 2)
     figure.set(figwidth=11)
     axis_gt.axis(False)
