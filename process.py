@@ -1,9 +1,10 @@
 from argparse import Action, ArgumentParser, ArgumentError, Namespace
 import cv2
+import itertools
 from matplotlib import pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
-from pathlib import PurePath
+from pathlib import Path
 from typing import Callable, Optional
 
 
@@ -22,6 +23,13 @@ def parse_ranges(ranges: str) -> list[int]:
     return sum([list(range(int(split[0]), int(split[-1]) + 1)) for split in splits], [])
 
 
+def add_mirror_argument(parser: ArgumentParser) -> None:
+    mirror_argument = parser.add_argument(
+        "-r", "--mirror", help="unit normal of mirror in scene in the form r_x,r_y,r_z"
+    )
+    mirror_argument.type = make_parse_floats(mirror_argument)
+
+
 def parse_arguments() -> Namespace:
     parser = ArgumentParser()
     subparsers = parser.add_subparsers(required=True)
@@ -32,7 +40,7 @@ def parse_arguments() -> Namespace:
         "image",
         help="path to lighting data as a single multi-channel image or multiple intensity images",
         nargs="+",
-        type=PurePath,
+        type=Path,
     )
     light_argument = default_parser.add_argument(
         "-l",
@@ -42,20 +50,13 @@ def parse_arguments() -> Namespace:
         required=True,
     )
     light_argument.type = make_parse_floats(light_argument)
-    default_parser.add_argument(
-        "-m", "--mask", help="path to object mask", type=PurePath
-    )
-    mirror_argument = default_parser.add_argument(
-        "-r",
-        "--mirror",
-        help="coefficients representing mirror plane a x + b x + c x + d = 0 in the form a,b,c,d",
-    )
-    mirror_argument.type = make_parse_floats(mirror_argument)
+    default_parser.add_argument("-m", "--mask", help="path to object mask", type=Path)
+    add_mirror_argument(default_parser)
     diligent_parser = subparsers.add_parser(
         "diligent", help="load images and lighting from a DiLiGenT directory"
     )
     diligent_parser.add_argument(
-        "directory", help="path to DiLiGent directory", type=PurePath
+        "directory", help="path to DiLiGent directory", type=Path
     )
     diligent_parser.add_argument(
         "-i",
@@ -63,11 +64,12 @@ def parse_arguments() -> Namespace:
         help="indices or ranges of indices of images to use",
         type=parse_ranges,
     )
+    add_mirror_argument(diligent_parser)
     return parser.parse_args()
 
 
 def load_images(
-    image_paths: list[PurePath], mask_path: Optional[PurePath]
+    image_paths: list[Path], mask_path: Optional[Path]
 ) -> NDArray[np.single]:
     mask = (
         cv2.imread(str(mask_path), flags=cv2.IMREAD_GRAYSCALE)
@@ -88,47 +90,114 @@ def load_images(
     )
 
 
+def calculate_normals(
+    images: NDArray[np.single], lights: NDArray[np.single]
+) -> tuple[NDArray[np.single], NDArray[np.single], NDArray[np.single]]:
+    pinv = np.linalg.pinv(np.array(lights))
+    normals_with_albedos = np.tensordot(images, pinv, ([2], [1]))
+    albedos = np.linalg.norm(normals_with_albedos, axis=2)
+    return (
+        np.nan_to_num(normals_with_albedos / albedos[:, :, np.newaxis]),
+        albedos,
+        np.sum(
+            np.square(
+                images
+                - np.moveaxis(
+                    np.tensordot(lights, normals_with_albedos, ([1], [2])), 0, 2
+                )
+            ),
+            2,
+        ),
+    )
+
+
+def prepare_normals(normals: NDArray[np.single]) -> NDArray[np.single]:
+    return (normals / 2 + 0.5) * np.logical_and.reduce(normals != 0, axis=2)[
+        :, :, np.newaxis
+    ]
+
+
 arguments = parse_arguments()
 if "directory" in arguments:
     with open(arguments.directory / "filenames.txt") as image_names:
+        mask_path = arguments.directory / "mask.png"
         images = load_images(
             [
                 arguments.directory / image_name.rstrip()
                 for image_index, image_name in enumerate(image_names)
                 if arguments.indices is None or image_index in arguments.indices
             ],
-            arguments.directory / "mask.png",
+            mask_path if mask_path.exists() else None,
         )
-    lights = (
-        np.loadtxt(arguments.directory / "light_directions.txt")[
-            arguments.indices or slice(None)
-        ]
-        * cv2.cvtColor(
-            np.loadtxt(arguments.directory / "light_intensities.txt", dtype=np.single)[
-                np.newaxis, arguments.indices or slice(None)
+    index_slice = arguments.indices if arguments.indices is not None else slice(None)
+    direct_lights = np.loadtxt(arguments.directory / "light_directions.txt")[
+        index_slice
+    ]
+    light_intensities_path = arguments.directory / "light_intensities.txt"
+    if light_intensities_path.exists():
+        direct_lights *= cv2.cvtColor(
+            np.loadtxt(light_intensities_path, dtype=np.single)[
+                np.newaxis, index_slice
             ],
             cv2.COLOR_RGB2GRAY,
         ).T
-    )
 else:
     if len(arguments.image) != len(arguments.light):
         raise ArgumentError(None, "number of lights must match number of images")
     images = load_images(arguments.image, arguments.mask)
-    lights = np.array(arguments.light)
-lights_pinv = np.linalg.inv(lights.T @ lights) @ lights.T
-normals_with_albedos = np.tensordot(images, lights_pinv, ([2], [1]))
-albedos = np.linalg.norm(normals_with_albedos, axis=2)
-normals = normals_with_albedos / albedos[:, :, np.newaxis]
-if "directory" in arguments:
+    direct_lights = np.array(arguments.light)
+if arguments.mirror is not None:
+    mirrored_lights = direct_lights - 2 * np.outer(
+        direct_lights @ arguments.mirror, arguments.mirror
+    )
+    direct_and_mirrored_lights = direct_lights + mirrored_lights
+    candidate_lights = list(
+        itertools.product(
+            *zip(direct_lights, mirrored_lights, direct_and_mirrored_lights)
+        )
+    )[:-1]
+    candidate_normals = []
+    candidate_albedos = []
+    candidate_errors = []
+    for light_combination in candidate_lights:
+        normals, albedos, errors = calculate_normals(
+            images, np.array(light_combination)
+        )
+        candidate_normals.append(normals)
+        candidate_albedos.append(albedos)
+        candidate_errors.append(errors)
+    selected_indices = np.argmin(candidate_errors, axis=0)
+    lights = np.array(candidate_lights)[selected_indices]
+    selected_normals = np.take_along_axis(
+        np.array(candidate_normals), selected_indices[np.newaxis, :, :, np.newaxis], 0
+    )[0]
+    selected_albedos = np.take_along_axis(
+        np.array(candidate_albedos), selected_indices[np.newaxis], 0
+    )[0]
+    figure, axes = plt.subplots(3, 9)
+    figure.set(figwidth=16)
+    for axis, normals in zip(axes.flat, candidate_normals):
+        axis.axis(False)
+        axis.imshow(prepare_normals(normals))
+    axes[2, 8].axis(False)
+else:
+    selected_normals, selected_albedos, errors = calculate_normals(
+        images, direct_lights
+    )
+if "directory" in arguments and (arguments.directory / "normal.txt").exists():
     figure, (axis_gt, axis_computed) = plt.subplots(1, 2)
     figure.set(figwidth=11)
     axis_gt.axis(False)
     axis_gt.imshow(
-        np.loadtxt(arguments.directory / "normal.txt").reshape(normals.shape)
+        prepare_normals(
+            np.loadtxt(arguments.directory / "normal.txt").reshape(
+                selected_normals.shape
+            )
+        )
     )
 else:
     figure, axis_computed = plt.subplots(1, 1)
     figure.set(figwidth=6)
 axis_computed.axis(False)
-axis_computed.imshow(normals)
+axis_computed.imshow(prepare_normals(selected_normals))
 plt.show()
