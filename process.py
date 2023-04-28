@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Iterable, Optional
 
 
 def make_parse_floats(action: Action) -> Callable[[str], list[float]]:
@@ -94,20 +94,57 @@ def calculate_normals(
     images: NDArray[np.single], lights: NDArray[np.single]
 ) -> tuple[NDArray[np.single], NDArray[np.single], NDArray[np.single]]:
     pinv = np.linalg.pinv(np.array(lights))
-    normals_with_albedos = np.tensordot(images, pinv, ([2], [1]))
-    albedos = np.linalg.norm(normals_with_albedos, axis=2)
+    normals_and_albedos = np.tensordot(images, pinv, ([2], [1]))
+    albedos = np.linalg.norm(normals_and_albedos, axis=2)
     return (
-        np.nan_to_num(normals_with_albedos / albedos[:, :, np.newaxis]),
+        np.nan_to_num(normals_and_albedos / albedos[:, :, np.newaxis]),
         albedos,
         np.sum(
             np.square(
                 images
                 - np.moveaxis(
-                    np.tensordot(lights, normals_with_albedos, ([1], [2])), 0, 2
+                    np.tensordot(lights, normals_and_albedos, ([1], [2])), 0, 2
                 )
             ),
             2,
         ),
+    )
+
+
+def select_normals_and_albedos(
+    images: NDArray[np.single],
+    candidate_lights: Iterable[
+        tuple[NDArray[np.single], NDArray[np.single], NDArray[np.single]]
+    ],
+) -> tuple[
+    NDArray[np.single],
+    NDArray[np.single],
+    list[NDArray[np.single]],
+    list[NDArray[np.single]],
+]:
+    candidate_normals = []
+    candidate_albedos = []
+    candidate_errors = []
+    for light_combination in candidate_lights:
+        normals, albedos, errors = calculate_normals(
+            images, np.array(light_combination)
+        )
+        candidate_normals.append(normals)
+        candidate_albedos.append(albedos)
+        candidate_errors.append(errors)
+    candidate_normals.pop()
+    candidate_albedos.pop()
+    candidate_errors.pop()
+    indices = np.argmin(candidate_errors, axis=0)
+    return (
+        np.take_along_axis(
+            np.array(candidate_normals),
+            indices[np.newaxis, :, :, np.newaxis],
+            0,
+        )[0],
+        np.take_along_axis(np.array(candidate_albedos), indices[np.newaxis], 0)[0],
+        candidate_normals,
+        candidate_albedos,
     )
 
 
@@ -151,53 +188,37 @@ if arguments.mirror is not None:
         direct_lights @ arguments.mirror, arguments.mirror
     )
     direct_and_mirrored_lights = direct_lights + mirrored_lights
-    candidate_lights = list(
+    (
+        normals,
+        _albedos,
+        candidate_normals,
+        _candidate_albedos,
+    ) = select_normals_and_albedos(
+        images,
         itertools.product(
             *zip(direct_lights, mirrored_lights, direct_and_mirrored_lights)
-        )
-    )[:-1]
-    candidate_normals = []
-    candidate_albedos = []
-    candidate_errors = []
-    for light_combination in candidate_lights:
-        normals, albedos, errors = calculate_normals(
-            images, np.array(light_combination)
-        )
-        candidate_normals.append(normals)
-        candidate_albedos.append(albedos)
-        candidate_errors.append(errors)
-    selected_indices = np.argmin(candidate_errors, axis=0)
-    lights = np.array(candidate_lights)[selected_indices]
-    selected_normals = np.take_along_axis(
-        np.array(candidate_normals), selected_indices[np.newaxis, :, :, np.newaxis], 0
-    )[0]
-    selected_albedos = np.take_along_axis(
-        np.array(candidate_albedos), selected_indices[np.newaxis], 0
-    )[0]
-    figure, axes = plt.subplots(3, 9)
-    figure.set(figwidth=16)
-    for axis, normals in zip(axes.flat, candidate_normals):
-        axis.axis(False)
-        axis.imshow(prepare_normals(normals))
-    axes[2, 8].axis(False)
-else:
-    selected_normals, selected_albedos, errors = calculate_normals(
-        images, direct_lights
+        ),
     )
+    figure, axes = plt.subplots(5, 6, layout="tight")
+    figure.set(figheight=11, figwidth=16)
+    for axis in axes.flat:
+        axis.axis(False)
+    for axis, candidate_normal in zip(axes.flat, candidate_normals):
+        axis.imshow(prepare_normals(candidate_normal))
+else:
+    normals, _albedos, _errors = calculate_normals(images, direct_lights)
 if "directory" in arguments and (arguments.directory / "normal.txt").exists():
     figure, (axis_gt, axis_computed) = plt.subplots(1, 2)
     figure.set(figwidth=11)
     axis_gt.axis(False)
     axis_gt.imshow(
         prepare_normals(
-            np.loadtxt(arguments.directory / "normal.txt").reshape(
-                selected_normals.shape
-            )
+            np.loadtxt(arguments.directory / "normal.txt").reshape(normals.shape)
         )
     )
 else:
     figure, axis_computed = plt.subplots(1, 1)
     figure.set(figwidth=6)
 axis_computed.axis(False)
-axis_computed.imshow(prepare_normals(selected_normals))
+axis_computed.imshow(prepare_normals(normals))
 plt.show()
