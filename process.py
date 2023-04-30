@@ -148,10 +148,10 @@ def select_normals_and_albedos(
     )
 
 
-def prepare_normals(normals: NDArray[np.single]) -> NDArray[np.single]:
-    return (normals / 2 + 0.5) * np.logical_and.reduce(normals != 0, axis=2)[
-        :, :, np.newaxis
-    ]
+def prepare_normals(
+    normals: NDArray[np.single], mask: NDArray[np.single]
+) -> NDArray[np.single]:
+    return (normals / 2 + 0.5) * mask[:, :, np.newaxis]
 
 
 arguments = parse_arguments()
@@ -183,6 +183,7 @@ else:
         raise ArgumentError(None, "number of lights must match number of images")
     images = load_images(arguments.image, arguments.mask)
     direct_lights = np.array(arguments.light)
+mask = np.logical_or.reduce(images >= 2, axis=2)
 if arguments.mirror is not None:
     mirrored_lights = direct_lights - 2 * np.outer(
         direct_lights @ arguments.mirror, arguments.mirror
@@ -204,21 +205,21 @@ if arguments.mirror is not None:
     for axis in axes.flat:
         axis.axis(False)
     for axis, candidate_normal in zip(axes.flat, candidate_normals):
-        axis.imshow(prepare_normals(candidate_normal))
+        axis.imshow(prepare_normals(candidate_normal, mask))
 else:
     normals, _albedos, _errors = calculate_normals(images, direct_lights)
 if "directory" in arguments and (arguments.directory / "normal.txt").exists():
-    figure, (axis_gt, axis_computed) = plt.subplots(1, 2)
+    figure, (axis_gt, axis_computed) = plt.subplots(1, 2, layout="tight")
     figure.set(figwidth=11)
     axis_gt.axis(False)
     axis_gt.imshow(
         prepare_normals(
-            np.loadtxt(arguments.directory / "normal.txt").reshape(normals.shape)
+            np.loadtxt(arguments.directory / "normal.txt").reshape(normals.shape), mask
         )
     )
 else:
-    figure, axis_computed = plt.subplots(1, 1)
+    figure, axis_computed = plt.subplots(1, 1, layout="tight")
     figure.set(figwidth=6)
 axis_computed.axis(False)
-axis_computed.imshow(prepare_normals(normals))
+axis_computed.imshow(prepare_normals(normals, mask))
 plt.show()

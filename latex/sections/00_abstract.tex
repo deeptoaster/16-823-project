@@ -1,17 +1,18 @@
 \begin{abstract}
-  We investigate the utilization of existing mirrors in a scene as a way tos
-  augment the recovery of scene geometry through traditional photometric stereo
-  techniques. The image received from an image plane is modelled as a second
-  camera viewing target objects from a different angle, and light from a known
-  primary source reflected on the object is modelled as an additional light
-  source. Such a method transforms scene mirrors from a source of error in
-  depth estimation to a source of additional information about the shape of
-  diffuse objects, enabling the reconstruction of otherwise obstructed areas,
-  such as self-occluded areas and sides of objects facing away from the camera.
-  Furthermore, we use the known geometry of the mirror in conjunction with a
-  Lambertian assumption of target object surfaces to estimate the position of a
-  primary light source, demonstrating the combined recovery of scene lighting
-  and scene geometry from grayscale images requiring only the the knowledge of
-  the position of a mirror.
+  We investigate the utilization of mirrors in a scene as a way to augment the
+  recovery of scene geometry through traditional photometric stereo techniques.
+  Light from a known primary source reflected on the mirror before encountering
+  the scene is modelled as a second light source, reducing the challenge of
+  photometric stereo with mirrors to that of photometric stereo with multiple
+  light sources per image. Such a method would transform scene mirrors from a
+  source of error in depth estimation to a source of additional information
+  about the shape of diffuse objects, enabling the reconstruction of otherwise
+  obstructed areas, such as self-occluded areas and sides of objects facing
+  away from the camera. However, we find that the geometric implications of a
+  single perfectly reflective stationary mirror render existing techniques to
+  determine the combination of lights incident at a scene point impossible to
+  resolve. Further work is needed to determine the feasibility of following
+  this method with either moving (frame-dependent) or partly-absorptive mirror
+  surfaces.
 \end{abstract}
 

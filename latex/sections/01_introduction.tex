@@ -55,16 +55,19 @@ Each of these techniques require very specific lighting
 conditions---\cite{lanman} and~\cite{ahn} with structured lighting projections
 (with the additional constraint of directional lighting, using a Fresnel lens,
 in the case of~\cite{lanman}) and~\cite{xu} with two different types of ToF
-sensors, which require active illumination.
-
-The approach presented in this paper is believed to be the first application of
-mirror-augmented scene reconstruction to a photometric stereo technique, which
-is more conducive to simple lighting setups without structure requirements
-beyond a directional source. Furthermore, we demonstrate the ability to solve
-for \textit{unknown} light sources before performing photometric stereo using
-the estimates. This shows that this technique can be appropriate in many
+sensors, which require active illumination. This paper, by contrast, explores
+the feasibility and considerations of mirror-augmented scene reconstruction
+with a photometric stereo technique, an area which does not seem to have been
+discussed in the literature. Such a technique would be appropriate in many
 situations in which existing techniques that incorporate mirrors may not be,
 such as in building a model of a room or of objects in an inaccessible
 location---applications in which we do not have the ability to manipulate the
 scene for our own benefit, to add mirrors or structured light.
+
+We reduce the problem of photometric stereo with mirrors to that of labelling
+pixels with the combination of direct and mirrored light illuminating it,
+similar to challenges addressed by existing techniques such as
+in~\cite{schechner}. Although the geometric issues presented below prevent
+positive scene reconstruction results from being demonstrated, it is hoped that
+they help to guide the development of just such a method in full in the future.
 

@@ -41,7 +41,7 @@ albedo and surface normal for each pixel:
   \end{bmatrix} \point \\
   \pixels                   &= \lights \point \\
   \lights^\intercal \pixels &= \lights^\intercal \lights \point \\
-  \point                    &= {\left(\lights^\intercal \lights\right)}^{-1} \lights^\intercal \pixels
+  \point                    &= {\left(\lights^\intercal \lights\right)}^{-1} \lights^\intercal \pixels \label{eq:pseudoinverse}
 \end{align}
 Continuity assumptions can then be used to recover a depth map of the scene
 from the computed surface normals.
@@ -55,14 +55,14 @@ surface after reflecting off a perfect mirror from the direct source is
 indistinguishable from light arriving from the image of the source across the
 mirror plane. That is, the vector $\light_{j, i}'$ pointing from the surface to
 the image of the light source can be expressed as
-\begin{equation}
+\begin{equation} \label{eq:light-reflection}
   \light_i' = \light_i - 2 \light_i^\parallel
             = \light_i - 2 \left(\light_i^\intercal \mirror\right) \mirror
 \end{equation}
 where $\mirror$ is the unit normal of the fixed scene mirror. This means that the
 light from the source and mirror in a single frame can be
 combined as
-\begin{equation}
+\begin{equation} \label{eq:combinations}
   \tilde{\light}_i = \occlusion_i \light_i + \occlusion_i' \light_i'
                    = \begin{cases}
     \light_i                                                       & \textrm{mirror occluded} \\
@@ -79,35 +79,30 @@ regularization techniques with a sparse linear solver as in~\cite{hernandez}.
 We ignore such cases for now, with the hope that we are able to place the light
 source or mirror in such a way that either the direct light source or its
 reflection reaches every pixel of interest on the image.
-\begin{figure}\label{fig:light-reflection}
+\begin{figure}
   \includesvg[width=\columnwidth]{images/light-reflection.svg}
   \caption{The light incident on the object from a directional source reflected
   across a mirror is analyzed as light from the image of the source. Note that
   arrows point in the direction of the vectors used in the algorithm, not in
-  the direction of light travel. Vector lengths are not to scale.}
+  the direction of light travel. Vector lengths are not to scale.}\label{fig:light-reflection}
 \end{figure}
 \subsection{Computing Normals and Depth}
-For the other three cases, we compute $\point$ nine times, one for each case
-for each of three captures. By assumping the normal $\hat{\point} =
-\frac{\point}{\|\point\|}$ varies smoothly across large regions of the object
-(its faces), we associate candidates of $\point(x, y)$ with likely candidates
-$\point(x \pm 1, y)$ and $\point(x, y \pm 1)$ of its neighbors, forming a graph
-whose connected components correspond to faces of the object.  For a given
-pixel position $(x, y)$, we take the candidate $\point$ that belongs to the
-largest connected component and use it to recover $z$ according to the standard
+For the other three cases, we compute $\point$ $3^N$ times, one for each case
+for each of three captures. At this point, the tasks is to determine, for each
+pixel location, which of the $3^N$ combinations of lights induces the correct
+normal---that is, the normal that correctly explains the values observed for
+that pixel in each of the frames. The various approaches applied to this task
+are described in Section~\ref{sec:implementation}. Once the correct candidate
+$\point$ is chosen, it is straightforward to recover $z$ according to the usual
 depth-from-normal algorithm.
 
 Another consideration in our system is that some of the pixels captured may
 image a mirror reflection of the object, rather than a point on the object
-directly. We account for this by pre-segmenting the part of the capture that
-images the mirror and constructing a virtual camera position---the image of the
-actual camera position reflected across the mirror plane---and using it to
-separately perform photometric stereo on the reflected scene. Note that unlike
-with the directional light source, we cannot assume the camera, whether
+directly. We can account for this by pre-segmenting the part of the capture
+that images the mirror and constructing a virtual camera position---the image
+of the actual camera position reflected across the mirror plane---and using it
+to separately perform photometric stereo on the reflected scene. Note that
+unlike with the directional light source, we cannot assume the camera, whether
 orthographic or projective, to be infinitely distant from the scene. Therefore,
 a slightly different virtual camera is required for every pixel captured.
 
-One final requirement of photometric stereo is that the lighting directions not
-be coplanar. In our case, the requirement is on $\tilde{\light}_i$. With a
-fixed mirror, this reduces to the standard condition that the direct lighting
-directions $\light_i$ not be coplanar.
