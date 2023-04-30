@@ -50,14 +50,14 @@ al.~\cite{ahn} generalize this approach, removing the requirement that the
 mirrors be aligned along an axis by presenting the unravelling of the multiple
 image views as a labelling problem, allowing the system to view an object being
 scanned from even more angles and resolving otherwise inherent problems with
-inset areas. Finally, Xu et al.~\cite{xu} completes the mirrors into a light
+inset areas. Finally, Xu et al.~\cite{xu} complete the mirrors into a light
 trap, inferring from a ToF camera and the known shape of the trap the complete
 light path of a ray ultimately reflected by the diffuse object inside. Note
 that although these methods are effective at utilizing numerous views of an
 object from multiple mirrors, they do so while restricted to objects small
 enough to fit in their setup and with the requirement that the operator be
-allowed to arrange a set of mirrors with high precision, two limitations the
-method in this paper seeks to avoid.
+allowed to arrange a set of mirrors with high precision, two limitations this
+paper seeks to avoid.
 
 It's worth noting that because mirrors are frequently a point of failure in
 na\"{\i}ve approaches to certain reconstruction algorithms, some groups take
@@ -67,10 +67,10 @@ MirrorNet and a labelled dataset of images containing mirrors for training it.
 One key insight they use is the existence of abrupt contextual contrast inside
 and outside of the mirror image, which helps the network infer and segment the
 mirror boundaries. This line of work is taken further by Lin et al.\ in the
-same group~\cite{lin}, which takes advantage of the fact that the content
-inside of the mirror is a reflection of something outside of it to not only
-improve on detection performance but also implicitly correlate the mirror image
-with its original.  Although this project does not make use of mirror detection
+same group~\cite{lin}, who take advantage of the fact that the content inside
+of the mirror is a reflection of something outside of it to not only improve on
+detection performance but also implicitly correlate the mirror image with its
+original.  Although this project does not make use of mirror detection
 algorithms, the existence of these methods indicates possible future research
 in end-to-end detection, localization, and adaptation of mirrors in scenes for
 photometric stereo.

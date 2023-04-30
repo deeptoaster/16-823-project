@@ -1,0 +1,70 @@
+\section{Conclusion}\label{sec:conclusion}
+Photometric stereo is no doubt an essential component of the pantheon of
+techniques for recovering 3D scene properties from purely visual information.
+Making it work in difficult scenarios---scenes whose properties do not match
+the original assumptions of light and surface properties---is an important
+ongoing area of research.
+
+In this paper, we looked at the applicability and implications of photometric
+stereo in scenes containing a stationary perfect mirror, providing a
+characterization of the problem and proposing a set of techniques for resolving
+the inherent ambiguity that arises when multiple light sources---in this case,
+the original light source and its mirror image---are present in a single frame.
+Unfortunately, it appears that the basic linear problem of photometric stereo
+is ill posed in the presence of such a mirror. We conclude with two statements:
+that any setup for directional-light photometric stereo with mirrors requires
+the mirrors to either change in position between frames or have a reflectivity
+significantly less than 1, and that the task of photometric stereo with mirrors
+in general reduces to a light-labelling problem of the sort described by
+Schechner et al.\ in~\cite{schechner}, a problem for which the most efficient
+solution still appears to be their ShadowCuts technique.
+\subsection{Future Work}
+Although the particular setup in our project was not condusive to a solution,
+there are still plenty of questions worth pursuing in this space. The most
+obvious is to continue investigating scenes for which photometric stereo
+methods \emph{are} appropriate. As discussed above, these would be scenes in
+which the mirror either changes in position from frame to frame or has a
+reflectivity value of less than 1.
+
+We might expect the former to have less utility due to its implications. If a
+mirror is an inherent part of the scene, then it would not be likely (nor
+desirable, as it implies scene motion) for the mirror to change position
+between captures. If a mirror is part of the capture apparatus, then there
+isn't a clear benefit of moving a mirror around between frames as opposed to
+simply replacing it with another light source, which leads to a similar problem
+characterization anyway. In fact, using a moving mirror instead of another
+light souorce carries the additional drawback that a mirror can't simply be
+switched on and off between frames as light sources are in~\cite{schechner}.
+
+On the other hand, a mirror with lower reflectivity may be a simple solution to
+this problem with no added complexity. The main drawback would be the lower
+level of illumination on the object. It would be worth conducting further
+experiments to see what values of reflectivity induce a good balance between
+avoiding light vector coplanarity and providing enough illumination.
+
+A second line of proposed future work involves modifying the characteristics of
+the direct or reflected light in order to make it easier to pick apart the
+direct and reflected illumination components on each pixel. Three approaches
+are proposed:
+\begin{enumerate}
+  \item Apply a color filter to the mirror, so that it is only reflective for a
+  subset of the incident wavelengths (from the direct illumination source).
+  This can be combined with the lower-reflectivity mirror proposal above to
+  reduce the number of custom components in the capture setup. A single mirror
+  that reflects only red light with known non-unit reflectivity, for example,
+  may work.
+  \item Direct the incoming light at a glancing angle to the mirror surface.
+  Because mirrors tend to induce polarization when reflecting light at shallow
+  angles, the degree to which the light received by the sensor is polarized can
+  be used to distinguish between direct and mirrored light sources.
+  \item Use circularly polarized light in the direct source. Because mirrors
+  reverse the direction of polarization, this can also be used as a way to
+  distinguish between direct and mirrored light sources.
+\end{enumerate}
+Each of these three methods, by changing the characteristics of the mirrored
+light with respect to the direct, may actually obviate the need for a
+source-labelling algorithm as described in Section~\ref{sec:implementation}, as
+the captured light would be more analogous to that of multi-band photometric
+stereo, in which as few as a single image with multiple light channels can be
+used to recover surface normals.
+

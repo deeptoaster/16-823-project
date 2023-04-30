@@ -18,8 +18,8 @@ point in a single frame, this becomes
            = \left(\sum_{j = 1}^L \occlusion_{j, i} \light_{j, i}^\intercal\right) \rho \hat{\point}
 \end{equation}
 as the sum of the contribution of each source $1 \le j \le L$. Here,
-$\occlusion_{j, i}$ is an indicator of whether light from source $j$ contacts the
-point or is occluded. As in the original formulation, the problem is
+$\occlusion_{j, i}$ is an indicator of whether light from source $j$ contacts
+the point or is occluded. As in the original formulation, the problem is
 underconstrained unless there are at least $N \ge 3$ \emph{captures} of each
 pixel, with $\light_i$ not all coplanar and each nonzero (i.e., not with all
 lights involved occluded). 
@@ -53,14 +53,14 @@ plane.
 Ignoring optical properties such as polarization, light arriving on the object
 surface after reflecting off a perfect mirror from the direct source is
 indistinguishable from light arriving from the image of the source across the
-mirror plane. That is, the vector $\light_{j, i}'$ pointing from the surface to
-the image of the light source can be expressed as
+mirror plane. That is, the vector $\light_i'$ pointing from the surface to the
+image of the light source can be expressed as
 \begin{equation} \label{eq:light-reflection}
   \light_i' = \light_i - 2 \light_i^\parallel
             = \light_i - 2 \left(\light_i^\intercal \mirror\right) \mirror
 \end{equation}
-where $\mirror$ is the unit normal of the fixed scene mirror. This means that the
-light from the source and mirror in a single frame can be
+where $\mirror$ is the unit normal of the fixed scene mirror. This means that
+the light from the source and mirror in a single frame can be
 combined as
 \begin{equation} \label{eq:combinations}
   \tilde{\light}_i = \occlusion_i \light_i + \occlusion_i' \light_i'
@@ -83,8 +83,9 @@ reflection reaches every pixel of interest on the image.
   \includesvg[width=\columnwidth]{images/light-reflection.svg}
   \caption{The light incident on the object from a directional source reflected
   across a mirror is analyzed as light from the image of the source. Note that
-  arrows point in the direction of the vectors used in the algorithm, not in
-  the direction of light travel. Vector lengths are not to scale.}\label{fig:light-reflection}
+  arrows point in the direction of the vectors used in the algorithm, which is
+  opposite the direction of light travel. Vector lengths are not to
+  scale.}\label{fig:light-reflection}
 \end{figure}
 \subsection{Computing Normals and Depth}
 For the other three cases, we compute $\point$ $3^N$ times, one for each case

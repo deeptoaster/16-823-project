@@ -1,6 +1,6 @@
 \section{Introduction}\label{sec:introduction}
 Photometric stereo and shape from shading describe a range of well-established
-techniques, first introduced in 1980~\cite{woodham1979}, for recovering surface
+techniques, first introduced in 1979~\cite{woodham1979}, for recovering surface
 normals from one or more images of target objects under known lighting
 conditions. Such techniques are important for performing depth and scene
 reconstruction in situations in which camera data is available but where more
@@ -20,7 +20,7 @@ several reasons:
   linear relationship between surface normal and reflectance can easily be
   solved, as in the general principle behind photometric stereo.
   \item Mirrors introduce ``false'' surfaces into the scene, in the sense that
-  the image reflected by a perfect mirror are indistinguishable from physical
+  the image reflected by a perfect mirror is indistinguishable from physical
   objects placed at the location of the image without additional heuristics.
   \item Even diffuse objects in the scene are affected as light reflecting off
   the mirror strikes the object from a different angle, introducing a strong
@@ -42,14 +42,14 @@ source from ``behind'' the mirror.
 
 In fact, several papers have already used mirrors as a source of additional
 scene information in applying a range of other scene-reconstruction methods.
-Lanman et al.~\cite{lanman} demonstrates the use of a pair of mirrors to
-perform structured-light 3D scanning more quickly, obviating the need for
-multiple scans with the camera placed at different angles to capture every side
-of the object. Ahn et al.~\cite{ahn} extends this to a larger ``kaleidoscope''
-of mirrors that don't need to be aligned along an axis, distinguishing pixels
-by reflection paths using the epipolar relationship between projector and
-camera. Xu et al.~\cite{xu} takes the mirror setup to its logical
-conclusion---a light trap---for performing depth sensing using a ToF camera.
+Lanman et al.~\cite{lanman} demonstrate the use of a pair of mirrors to perform
+structured-light 3D scanning more quickly, obviating the need for multiple
+scans with the camera placed at different angles to capture every side of the
+object. Ahn et al.~\cite{ahn} extend this to a larger ``kaleidoscope'' of
+mirrors that don't need to be aligned along an axis, distinguishing pixels by
+reflection paths using the epipolar relationship between projector and camera.
+Xu et al.~\cite{xu} take the mirror setup to its logical conclusion---a light
+trap---for performing depth sensing using a ToF camera.
 
 Each of these techniques require very specific lighting
 conditions---\cite{lanman} and~\cite{ahn} with structured lighting projections

@@ -26,8 +26,9 @@ Since the most common light combination is arguably this one in which neither
 the direct nor the mirrored light is occluded, especially with shallow incident
 light angles on the mirror surface, this is a significant handicap on the
 utility of photometric stereo in the presence of such a mirror. Note that this
-phenomenon only necessarily applies when the mirror is stationary (i.e., its
-position does not vary between frames) and has high reflectivity.
+phenomenon only necessarily applies when the light is directional and the
+mirror is stationary (i.e., its position does not vary between frames) and has
+high reflectivity.
 \begin{figure}
   \includegraphics[width=\columnwidth]{images/output-candidates}
   \caption{A visualization of the first 30 of the 243 ($3^N$ with $N = 5$)
@@ -35,16 +36,18 @@ position does not vary between frames) and has high reflectivity.
   scene in each one. Within each of these candidate maps, the combination of
   lights incident on all pixels is assumed to be the same within a frame.
   Theoretically, the correct normal map can be constructed by selecting the
-  correct option for each pixel among the
-  candidates.}\label{fig:output-candidates}
+  correct option for each pixel among the candidates. Due to light source
+  coplanarity and the subsequent loss of rank in the light matrix, the last
+  such map (the one in which light from both the direct and the mirrored light
+  sources is visible) is always blank.}\label{fig:output-candidates}
 \end{figure}
 \begin{figure}
   \includegraphics[width=\columnwidth]{images/output-combined}
   \caption{A visualization of the normal map constructed by the least-squares
   approach. Note that the most likely candidate for most pixels in the scene
-  (the one in which all both the direct and mirrored light source is visible to
-  a pixel in every frame) is invalid as described in Section~\ref{sec:results}.
-  As a result, most of the obtained values are
+  (the one in which all both the direct and the mirrored light sources is
+  visible to a pixel in every frame) is invalid as described in
+  Section~\ref{sec:results}. As a result, most of the obtained values are
   wrong.}\label{fig:output-combined}
 \end{figure}
 
